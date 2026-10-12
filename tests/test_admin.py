@@ -11,7 +11,7 @@ import io
 import pytest
 from PIL import Image
 
-from app import create_app, store
+from app import create_app, publish, store
 
 
 @pytest.fixture()
@@ -22,6 +22,9 @@ def sandbox(tmp_path, monkeypatch):
     monkeypatch.setattr(store, "DATA_DIR", site / "data")
     monkeypatch.setattr(store, "ART_DIR", site / "art")
     monkeypatch.setattr(store, "DATA_FILE", site / "data" / "artworks.json")
+    # publish has its own ROOT; without this the publish test would run git
+    # commands against whichever repo happens to contain the project.
+    monkeypatch.setattr(publish, "ROOT", tmp_path)
     site.mkdir(parents=True)
     (site / "index.html").write_text("<h1>preview</h1>", encoding="utf-8")
     return site
