@@ -1,0 +1,111 @@
+:root{
+  --accent:#ff5e3a;
+  --bg:#141317;
+  --panel:#1d1b21;
+  --panel-2:#232028;
+  --ink:#f2efec;
+  --muted:#9b9490;
+  --line:rgba(255,255,255,.10);
+  --danger:#ff6b6b;
+  --radius:14px;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  background:var(--bg); color:var(--ink);
+  font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+a{color:inherit}
+h1,h2,h3{font-weight:650; letter-spacing:-.01em; margin:0 0 .4em}
+.muted{color:var(--muted)}
+.small{font-size:12.5px}
+code{background:rgba(255,255,255,.06); padding:.1em .35em; border-radius:5px; font-size:.9em}
+
+/* top bar ---------------------------------------------------------------- */
+.topbar{
+  display:flex; align-items:center; justify-content:space-between; gap:1rem;
+  padding:.9rem 1.4rem; border-bottom:1px solid var(--line);
+  position:sticky; top:0; background:color-mix(in srgb,var(--bg) 88%, transparent);
+  backdrop-filter:blur(10px); z-index:5; flex-wrap:wrap;
+}
+.brand{display:flex; align-items:center; gap:.55rem; text-decoration:none; font-weight:650; letter-spacing:-.02em}
+.brand .dot{width:10px;height:10px;border-radius:50%;background:var(--accent); box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 22%, transparent)}
+.tabs{display:flex; gap:.3rem; flex-wrap:wrap}
+.tabs a{padding:.45rem .8rem; border-radius:9px; text-decoration:none; color:var(--muted)}
+.tabs a:hover{background:var(--panel-2); color:var(--ink)}
+
+/* layout ---------------------------------------------------------------- */
+.wrap{max-width:1180px; margin:0 auto; padding:1.6rem 1.4rem 5rem}
+
+/* flash ----------------------------------------------------------------- */
+.flash{padding:.7rem 1rem; border-radius:10px; margin-bottom:1rem; border:1px solid var(--line); background:var(--panel)}
+.flash-success{border-color:color-mix(in srgb, var(--accent) 55%, transparent)}
+.flash-error{border-color:color-mix(in srgb, var(--danger) 60%, transparent); color:#ffd7d7}
+
+/* panels ---------------------------------------------------------------- */
+.panel{background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:1.1rem 1.2rem}
+.publish-panel{display:flex; gap:1.4rem; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; margin-bottom:1.6rem}
+.publish-panel h2{font-size:1rem; text-transform:uppercase; letter-spacing:.12em; color:var(--muted); font-weight:600}
+.changed{margin:.4rem 0 0; padding-left:1.1rem; color:var(--muted); font-size:13px; max-height:9em; overflow:auto}
+.publish-form{display:flex; gap:.5rem; flex-wrap:wrap}
+.publish-form input{min-width:230px}
+
+/* controls -------------------------------------------------------------- */
+input[type=text],input[type=email],input[type=url],input[type=color],textarea,select{
+  width:100%; padding:.6rem .7rem; border-radius:9px; background:var(--bg);
+  border:1px solid var(--line); color:var(--ink); font:inherit;
+}
+input:focus,textarea:focus{outline:2px solid color-mix(in srgb,var(--accent) 60%, transparent); outline-offset:0; border-color:transparent}
+textarea{resize:vertical}
+input[type=file]{padding:.5rem; background:var(--bg); border:1px dashed var(--line); border-radius:9px; width:100%; color:var(--muted)}
+button,.button{
+  font:inherit; cursor:pointer; padding:.55rem .9rem; border-radius:9px;
+  border:1px solid var(--line); background:var(--panel-2); color:var(--ink); text-decoration:none;
+  display:inline-flex; align-items:center; gap:.4rem;
+}
+button:hover,.button:hover{border-color:color-mix(in srgb,var(--accent) 40%, transparent)}
+button.primary,.button.primary{background:var(--accent); color:#160c08; border-color:transparent; font-weight:650}
+button.primary:hover{filter:brightness(1.08)}
+button:disabled{opacity:.4; cursor:not-allowed}
+button.danger{color:var(--danger)}
+
+/* forms ----------------------------------------------------------------- */
+.form{display:grid; gap:1rem}
+.form label{display:grid; gap:.35rem; font-size:13px; color:var(--muted)}
+.form-grid{display:grid; grid-template-columns:1.5fr 1fr; gap:1.6rem}
+.form-main{display:grid; gap:.9rem}
+.row{display:grid; grid-template-columns:1fr 1fr; gap:.9rem}
+.check{display:flex!important; align-items:center; gap:.6rem; color:var(--ink)}
+.check input{width:auto}
+.form-side{display:grid; gap:.7rem; align-content:start}
+.preview{width:100%; border-radius:10px; border:1px solid var(--line); display:block}
+.form-actions{display:flex; gap:.6rem; border-top:1px solid var(--line); padding-top:1rem}
+fieldset{border:1px solid var(--line); border-radius:10px; padding:.9rem}
+legend{padding:0 .4rem; color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:.1em}
+.link-row{display:grid; grid-template-columns:1fr 2fr auto; gap:.5rem; margin-bottom:.5rem}
+.remove-row{color:var(--danger); padding:.4rem .7rem}
+
+/* gallery list ---------------------------------------------------------- */
+.gallery-head{display:flex; align-items:center; justify-content:space-between; margin:0 0 .9rem}
+.studio-grid{list-style:none; margin:0; padding:0; display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:1rem}
+.piece{background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; display:flex; flex-direction:column}
+.piece .thumb{display:block; aspect-ratio:4/3; background:var(--panel-2); overflow:hidden}
+.piece .thumb img{width:100%; height:100%; object-fit:cover; display:block; transition:transform .4s ease}
+.piece .thumb:hover img{transform:scale(1.04)}
+.noimg{display:grid; place-items:center; height:100%; color:var(--muted); font-size:12px}
+.piece-body{padding:.75rem .85rem; display:grid; gap:.25rem}
+.piece-body h3{font-size:14.5px; margin:0}
+.star{color:var(--accent)}
+.tags{display:flex; flex-wrap:wrap; gap:.3rem; margin:.1rem 0 0}
+.tags span{font-size:11px; color:var(--muted); border:1px solid var(--line); border-radius:99px; padding:.05rem .5rem}
+.piece-actions{display:flex; gap:.35rem; align-items:center; margin-top:.5rem; flex-wrap:wrap}
+.piece-actions form{margin:0}
+.piece-actions a,.piece-actions button{font-size:12.5px; padding:.3rem .6rem}
+.empty{text-align:center; padding:4rem 1rem; border:1px dashed var(--line); border-radius:var(--radius); display:grid; gap:1rem; justify-items:center; color:var(--muted)}
+
+@media (max-width:760px){
+  .form-grid{grid-template-columns:1fr}
+  .row{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}

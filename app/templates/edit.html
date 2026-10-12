@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}{{ heading }}{% endblock %}
+{% block content %}
+
+<h2>{{ heading }}</h2>
+
+<form class="panel form" method="post" action="{{ action }}" enctype="multipart/form-data">
+  <div class="form-grid">
+    <div class="form-main">
+      <label>Title
+        <input type="text" name="title" value="{{ art.title if art else '' }}" required placeholder="Fire Maiden">
+      </label>
+
+      <div class="row">
+        <label>Year
+          <input type="text" name="year" value="{{ art.year if art else '' }}" placeholder="2025">
+        </label>
+        <label>Medium
+          <input type="text" name="medium" value="{{ art.medium if art else '' }}" placeholder="Digital painting">
+        </label>
+      </div>
+
+      <label>Tags <span class="muted">(comma separated)</span>
+        <input type="text" name="tags" value="{{ art.tags|join(', ') if art else '' }}" placeholder="character, desert, wip">
+      </label>
+
+      <label>Alt text <span class="muted">(describes the image for screen readers)</span>
+        <input type="text" name="alt" value="{{ art.alt if art else '' }}"
+               placeholder="A woman wreathed in fire, standing in dark water">
+      </label>
+
+      <label class="check">
+        <input type="checkbox" name="featured" {% if art and art.featured %}checked{% endif %}>
+        Feature this piece (it appears larger, first in the gallery)
+      </label>
+    </div>
+
+    <div class="form-side">
+      {% if art and art.file %}
+        <img class="preview" src="{{ url_for('admin.preview', path=art.file) }}" alt="">
+        <p class="muted small">Leave the image field empty to keep this picture.</p>
+      {% endif %}
+      <label>Image {% if not art %}<span class="muted">(required)</span>{% endif %}
+        <input type="file" name="image" accept=".png,.jpg,.jpeg,.webp,.gif,.bmp,.tiff,.kra"
+               {% if not art %}required{% endif %}>
+      </label>
+      <p class="muted small">PNG, JPG, WEBP or a Krita <code>.kra</code> file. It is
+        resized and converted for the web automatically.</p>
+    </div>
+  </div>
+
+  <div class="form-actions">
+    <button class="primary" type="submit">Save</button>
+    <a class="button" href="{{ url_for('admin.dashboard') }}">Cancel</a>
+  </div>
+</form>
+
+{% endblock %}

@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Gallery{% endblock %}
+{% block content %}
+
+<section class="panel publish-panel">
+  <div>
+    <h2>Publish</h2>
+    {% if not git.repo %}
+      <p class="muted">This folder is not a git repository yet. Set it up with
+        <code>git init</code> and add your GitHub remote to enable publishing.</p>
+    {% elif git.changed %}
+      <p><strong>{{ git.changed|length }}</strong> file(s) changed since the last publish:</p>
+      <ul class="changed">
+        {% for path in git.changed[:8] %}<li>{{ path }}</li>{% endfor %}
+        {% if git.changed|length > 8 %}<li class="muted">…and {{ git.changed|length - 8 }} more</li>{% endif %}
+      </ul>
+    {% else %}
+      <p class="muted">Everything is published. Your live site matches this computer.</p>
+    {% endif %}
+  </div>
+  <form method="post" action="{{ url_for('admin.do_publish') }}" class="publish-form">
+    <input type="text" name="message" placeholder="What changed? (optional)">
+    <button class="primary" type="submit" {% if not git.repo or not git.changed %}disabled{% endif %}>
+      Publish to the web
+    </button>
+  </form>
+</section>
+
+<section class="gallery-head">
+  <h2>{{ artworks|length }} artwork{{ '' if artworks|length == 1 else 's' }}</h2>
+  <a class="button" href="{{ url_for('admin.new_artwork') }}">+ Add artwork</a>
+</section>
+
+{% if not artworks %}
+  <div class="empty">
+    <p>No artworks yet.</p>
+    <a class="button primary" href="{{ url_for('admin.new_artwork') }}">Add your first piece</a>
+  </div>
+{% else %}
+  <ul class="studio-grid">
+    {% for art in artworks %}
+    <li class="piece">
+      <a class="thumb" href="{{ url_for('admin.edit_artwork', art_id=art.id) }}">
+        {% if art.file %}<img src="{{ url_for('admin.preview', path=art.file) }}" alt="{{ art.alt or art.title }}" loading="lazy">
+        {% else %}<span class="noimg">no image</span>{% endif %}
+      </a>
+      <div class="piece-body">
+        <h3>{{ art.title }}{% if art.featured %} <span class="star" title="Featured">★</span>{% endif %}</h3>
+        <p class="muted">{{ art.year }}{% if art.medium %} · {{ art.medium }}{% endif %}</p>
+        {% if art.tags %}<p class="tags">{% for tag in art.tags %}<span>{{ tag }}</span>{% endfor %}</p>{% endif %}
+        <div class="piece-actions">
+          <a href="{{ url_for('admin.edit_artwork', art_id=art.id) }}">Edit</a>
+          <form method="post" action="{{ url_for('admin.move_artwork', art_id=art.id, direction='up') }}">
+            <button title="Move earlier">↑</button></form>
+          <form method="post" action="{{ url_for('admin.move_artwork', art_id=art.id, direction='down') }}">
+            <button title="Move later">↓</button></form>
+          <form method="post" action="{{ url_for('admin.delete_artwork', art_id=art.id) }}"
+                onsubmit="return confirm('Delete “{{ art.title }}”? This cannot be undone.');">
+            <button class="danger" title="Delete">Delete</button></form>
+        </div>
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+{% endif %}
+
+{% endblock %}

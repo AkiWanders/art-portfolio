@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SandGrace · Portfolio</title>
+  <meta name="description" content="Concept art, characters and strange worlds by SandGrace.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23ff5e3a'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css">
+  <script>
+    // Apply the saved theme before paint so there is no white flash.
+    try {
+      const saved = localStorage.getItem("theme");
+      if (saved) document.documentElement.dataset.theme = saved;
+    } catch (e) {}
+  </script>
+</head>
+<body>
+  <a class="skip" href="#work">Skip to work</a>
+
+  <header class="site-head">
+    <a class="name" href="#top" id="artist">SandGrace</a>
+    <nav class="site-nav">
+      <a href="#work">Work</a>
+      <a href="#about">About</a>
+      <a href="#contact">Contact</a>
+      <button id="theme-toggle" class="icon-button" type="button"
+              aria-label="Switch between light and dark" title="Switch theme">◐</button>
+    </nav>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <h1 id="hero-name">SandGrace</h1>
+      <p class="tagline" id="hero-tagline"></p>
+      <p class="intro" id="hero-intro"></p>
+    </section>
+
+    <section id="work" class="work">
+      <div class="filters" id="filters" role="group" aria-label="Filter by tag"></div>
+      <div class="gallery" id="gallery" aria-live="polite"></div>
+      <p class="empty-note" id="empty-note" hidden>No pieces with that tag yet.</p>
+    </section>
+
+    <section id="about" class="about">
+      <h2>About</h2>
+      <p id="about-text"></p>
+    </section>
+  </main>
+
+  <footer id="contact" class="contact">
+    <h2>Contact</h2>
+    <div class="links" id="links"></div>
+    <p class="colophon">© <span id="year"></span> <span id="footer-name">SandGrace</span> · all artwork belongs to the artist</p>
+  </footer>
+
+  <div class="lightbox" id="lightbox" hidden>
+    <button class="lb-close" id="lb-close" aria-label="Close">×</button>
+    <button class="lb-nav lb-prev" id="lb-prev" aria-label="Previous piece">‹</button>
+    <figure class="lb-figure">
+      <img id="lb-image" alt="">
+      <figcaption>
+        <span class="lb-title" id="lb-title"></span>
+        <span class="lb-meta" id="lb-meta"></span>
+      </figcaption>
+    </figure>
+    <button class="lb-nav lb-next" id="lb-next" aria-label="Next piece">›</button>
+  </div>
+
+  <noscript>
+    <p class="empty-note">This gallery needs JavaScript to load the artwork list.</p>
+  </noscript>
+
+  <script src="app.js"></script>
+</body>
+</html>

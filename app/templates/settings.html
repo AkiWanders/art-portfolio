@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Settings{% endblock %}
+{% block content %}
+
+<h2>Site settings</h2>
+
+<form class="panel form" method="post" action="{{ url_for('admin.settings') }}">
+  <label>Artist name
+    <input type="text" name="artist" value="{{ site.artist }}">
+  </label>
+  <label>Tagline <span class="muted">(the line under your name)</span>
+    <input type="text" name="tagline" value="{{ site.tagline }}">
+  </label>
+  <label>Intro <span class="muted">(one short sentence in the hero)</span>
+    <input type="text" name="intro" value="{{ site.intro }}">
+  </label>
+  <label>About
+    <textarea name="about" rows="5">{{ site.about }}</textarea>
+  </label>
+  <div class="row">
+    <label>Accent colour
+      <input type="color" name="accent" value="{{ site.accent or '#ff5e3a' }}">
+    </label>
+    <label>Contact email
+      <input type="email" name="email" value="{{ site.email }}" placeholder="you@example.com">
+    </label>
+  </div>
+
+  <fieldset class="links">
+    <legend>Links</legend>
+    <div id="link-rows">
+      {% for link in site.links %}
+      <div class="link-row">
+        <input type="text" name="link_label" value="{{ link.label }}" placeholder="Instagram">
+        <input type="url" name="link_url" value="{{ link.url }}" placeholder="https://instagram.com/…">
+        <button type="button" class="remove-row" title="Remove">×</button>
+      </div>
+      {% endfor %}
+    </div>
+    <button type="button" id="add-link" class="button">+ Add link</button>
+  </fieldset>
+
+  <div class="form-actions">
+    <button class="primary" type="submit">Save settings</button>
+  </div>
+</form>
+
+{% endblock %}

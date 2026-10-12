@@ -1,0 +1,259 @@
+{
+  "site": {
+    "artist": "SandGrace",
+    "tagline": "Concept art, characters and strange worlds",
+    "intro": "I paint places that do not exist yet — then fill them with people.",
+    "about": "I'm SandGrace, a concept artist. I design characters, creatures and the worlds they live in, then colour them until they feel real. Most of the work here grows out of a desert setting I keep returning to — sand, ruined cities, and the things that walk between them.",
+    "accent": "#ff5e3a",
+    "email": "",
+    "links": [
+      {
+        "label": "ArtStation",
+        "url": "https://artstation.com/sandgrace"
+      }
+    ]
+  },
+  "artworks": [
+    {
+      "id": "c5d9f3e6c065",
+      "title": "Age of Duskborne",
+      "year": "2025",
+      "medium": "Digital painting",
+      "tags": [
+        "character",
+        "poster",
+        "sand"
+      ],
+      "alt": "A lone figure in layered robes standing against a pale sky",
+      "featured": true,
+      "order": 1,
+      "added": "2026-10-12",
+      "file": "art/age-of-duskborne-standing-13f636e8.webp",
+      "w": 1025,
+      "h": 1800
+    },
+    {
+      "id": "6f0ffff4a01f",
+      "title": "Fire Maiden",
+      "year": "2025",
+      "medium": "Digital painting",
+      "tags": [
+        "character",
+        "fire"
+      ],
+      "alt": "A woman wreathed in flame, hair lifting like heat haze",
+      "featured": true,
+      "order": 2,
+      "added": "2026-10-12",
+      "file": "art/fire-maiden-be6a66e3.webp",
+      "w": 1800,
+      "h": 1440
+    },
+    {
+      "id": "aa2364162ef8",
+      "title": "Hero of Sand",
+      "year": "2024",
+      "medium": "Digital painting",
+      "tags": [
+        "character",
+        "hero",
+        "sand"
+      ],
+      "alt": "A hero in desert armour, half turned, lit from behind",
+      "featured": true,
+      "order": 3,
+      "added": "2026-10-12",
+      "file": "art/hero-of-sand-art-0471ad9e.webp",
+      "w": 1708,
+      "h": 1416
+    },
+    {
+      "id": "eeb2cff9c4e8",
+      "title": "Sandwanderer",
+      "year": "2024",
+      "medium": "Digital painting",
+      "tags": [
+        "character",
+        "sand"
+      ],
+      "alt": "A hooded wanderer crossing an empty desert",
+      "featured": false,
+      "order": 4,
+      "added": "2026-10-12",
+      "file": "art/sandwanderer-colored-5f76b3ae.webp",
+      "w": 1800,
+      "h": 1800
+    },
+    {
+      "id": "1fc7dae6ae0a",
+      "title": "Sand Astrologers",
+      "year": "2024",
+      "medium": "Digital painting",
+      "tags": [
+        "scene",
+        "sand",
+        "magic"
+      ],
+      "alt": "Robed astrologers gathered beneath a vast sky",
+      "featured": false,
+      "order": 5,
+      "added": "2026-10-12",
+      "file": "art/sand-astrologers-3-fdb54ef7.webp",
+      "w": 1800,
+      "h": 1800
+    },
+    {
+      "id": "4d3aef78b35e",
+      "title": "Desert Sacred City",
+      "year": "2024",
+      "medium": "Digital painting",
+      "tags": [
+        "environment",
+        "sand"
+      ],
+      "alt": "A tiered sacred city rising from the dunes",
+      "featured": false,
+      "order": 6,
+      "added": "2026-10-12",
+      "file": "art/desert-sacred-city-7e085aaf.webp",
+      "w": 1800,
+      "h": 1800
+    },
+    {
+      "id": "ffe025c1c13d",
+      "title": "Berserker",
+      "year": "2024",
+      "medium": "Digital painting",
+      "tags": [
+        "character",
+        "enemy"
+      ],
+      "alt": "A heavy-set berserker braced for a charge",
+      "featured": false,
+      "order": 7,
+      "added": "2026-10-12",
+      "file": "art/berserker-2png-9e9d5d66.webp",
+      "w": 1800,
+      "h": 1800
+    },
+    {
+      "id": "e2ae6586dbda",
+      "title": "Bell Bearer",
+      "year": "2024",
+      "medium": "Digital painting",
+      "tags": [
+        "character",
+        "dark"
+      ],
+      "alt": "A figure carrying a great bell through shadow",
+      "featured": false,
+      "order": 8,
+      "added": "2026-10-12",
+      "file": "art/bell-berer-2-4dc93f81.webp",
+      "w": 1800,
+      "h": 900
+    },
+    {
+      "id": "2dd07d7bd0ce",
+      "title": "RPG Character Sheet",
+      "year": "2024",
+      "medium": "Digital painting",
+      "tags": [
+        "character sheet",
+        "rpg"
+      ],
+      "alt": "A line-up of role-playing characters shown from several angles",
+      "featured": false,
+      "order": 9,
+      "added": "2026-10-12",
+      "file": "art/character-sheets-rpg-style-5db1dff4.webp",
+      "w": 1800,
+      "h": 1200
+    },
+    {
+      "id": "2e4e85b0c47d",
+      "title": "Lucifer, the Son",
+      "year": "2023",
+      "medium": "Digital painting",
+      "tags": [
+        "character",
+        "dark"
+      ],
+      "alt": "A winged figure lit by a single low flame",
+      "featured": false,
+      "order": 10,
+      "added": "2026-10-12",
+      "file": "art/lucifer-the-son-3dcf79fb.webp",
+      "w": 1800,
+      "h": 1579
+    },
+    {
+      "id": "d5792833dd83",
+      "title": "Lotus",
+      "year": "2024",
+      "medium": "Digital painting",
+      "tags": [
+        "character",
+        "study"
+      ],
+      "alt": "A calm figure framed by a lotus blossom",
+      "featured": false,
+      "order": 11,
+      "added": "2026-10-12",
+      "file": "art/lotus-ab4abe56.webp",
+      "w": 1800,
+      "h": 1440
+    },
+    {
+      "id": "ff0774d8eb57",
+      "title": "Dwarf Study",
+      "year": "2023",
+      "medium": "Digital painting",
+      "tags": [
+        "study",
+        "character"
+      ],
+      "alt": "A study of a stout armoured dwarf",
+      "featured": false,
+      "order": 12,
+      "added": "2026-10-12",
+      "file": "art/dwarf-study-7366855a.webp",
+      "w": 1800,
+      "h": 1800
+    },
+    {
+      "id": "b7b2f19c60a0",
+      "title": "Skeli, Coloured",
+      "year": "2024",
+      "medium": "Digital painting",
+      "tags": [
+        "creature",
+        "enemy"
+      ],
+      "alt": "A skeleton warrior rendered in cold colour",
+      "featured": false,
+      "order": 13,
+      "added": "2026-10-12",
+      "file": "art/skeli1-colored-75872fe1.webp",
+      "w": 1800,
+      "h": 1620
+    },
+    {
+      "id": "d978fab861b1",
+      "title": "Heart on Fire",
+      "year": "2025",
+      "medium": "Digital painting",
+      "tags": [
+        "illustration",
+        "fire"
+      ],
+      "alt": "A burning heart held in the dark",
+      "featured": false,
+      "order": 14,
+      "added": "2026-10-12",
+      "file": "art/heart-on-fire-dd6fac5a.webp",
+      "w": 1350,
+      "h": 1800
+    }
+  ]
+}
