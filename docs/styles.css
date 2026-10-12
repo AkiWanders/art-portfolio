@@ -62,7 +62,7 @@ a { color: inherit; }
   display: flex; align-items: center; justify-content: space-between; gap: 1rem;
   padding: 0.9rem clamp(1rem, 4vw, 3rem);
   background: color-mix(in srgb, var(--bg) 85%, transparent);
-  backdrop-filter: blur(12px);
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
   border-bottom: 1px solid var(--line);
 }
 .name {
@@ -185,7 +185,7 @@ a { color: inherit; }
   display: grid; grid-template-columns: auto 1fr auto; align-items: center;
   gap: 1rem; padding: clamp(0.5rem, 3vw, 2.5rem);
   background: color-mix(in srgb, var(--bg) 94%, transparent);
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
   animation: fade 0.25s ease;
 }
 @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
