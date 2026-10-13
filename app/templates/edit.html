@@ -36,16 +36,40 @@
     </div>
 
     <div class="form-side">
-      {% if art and art.file %}
-        <img class="preview" src="{{ url_for('admin.preview', path=art.file) }}" alt="">
-        <p class="muted small">Leave the image field empty to keep this picture.</p>
+      {% if art and art.images %}
+        <p class="muted small">
+          <strong>{{ art.images|length }}</strong> image{{ '' if art.images|length == 1 else 's' }}.
+          The first is the cover shown in the gallery.
+        </p>
+        <ul class="image-list">
+          {% for image in art.images %}
+          <li class="image-row{% if loop.first %} is-cover{% endif %}">
+            <img src="{{ url_for('admin.preview', path=image.file) }}" alt="">
+            <div class="image-actions">
+              {% if loop.first %}
+                <span class="badge">Cover</span>
+              {% else %}
+                <button class="button tiny" type="submit" form="cover-{{ loop.index }}">Make cover</button>
+              {% endif %}
+              <button class="button tiny" type="submit" form="up-{{ loop.index }}"
+                      title="Move earlier" {% if loop.first %}disabled{% endif %}>↑</button>
+              <button class="button tiny" type="submit" form="down-{{ loop.index }}"
+                      title="Move later" {% if loop.last %}disabled{% endif %}>↓</button>
+              <button class="button tiny danger" type="submit" form="rm-{{ loop.index }}"
+                      title="Remove this image">Remove</button>
+            </div>
+          </li>
+          {% endfor %}
+        </ul>
       {% endif %}
-      <label>Image {% if not art %}<span class="muted">(required)</span>{% endif %}
-        <input type="file" name="image" accept=".png,.jpg,.jpeg,.webp,.gif,.bmp,.tiff,.kra"
-               {% if not art %}required{% endif %}>
+
+      <label>Add image{{ 's' if art else '' }} {% if not art %}<span class="muted">(required)</span>{% endif %}
+        <input type="file" name="images" accept=".png,.jpg,.jpeg,.webp,.gif,.bmp,.tiff,.kra"
+               multiple {% if not art %}required{% endif %}>
       </label>
-      <p class="muted small">PNG, JPG, WEBP or a Krita <code>.kra</code> file. It is
-        resized and converted for the web automatically.</p>
+      <p class="muted small">PNG, JPG, WEBP or a Krita <code>.kra</code> file. Pick several
+        at once to make a set — each one is resized and converted for the web
+        automatically.</p>
     </div>
   </div>
 
@@ -54,5 +78,24 @@
     <a class="button" href="{{ url_for('admin.dashboard') }}">Cancel</a>
   </div>
 </form>
+
+{% if art and art.images %}
+  {# These small forms live outside the main form (HTML cannot nest them) and are
+     triggered by the buttons above through their form="..." attribute. #}
+  {% for image in art.images %}
+    <form id="cover-{{ loop.index }}" method="post" hidden
+          action="{{ url_for('admin.cover_image', art_id=art.id) }}">
+      <input type="hidden" name="image" value="{{ image.file }}"></form>
+    <form id="up-{{ loop.index }}" method="post" hidden
+          action="{{ url_for('admin.move_image', art_id=art.id, direction='up') }}">
+      <input type="hidden" name="image" value="{{ image.file }}"></form>
+    <form id="down-{{ loop.index }}" method="post" hidden
+          action="{{ url_for('admin.move_image', art_id=art.id, direction='down') }}">
+      <input type="hidden" name="image" value="{{ image.file }}"></form>
+    <form id="rm-{{ loop.index }}" method="post" hidden
+          action="{{ url_for('admin.delete_image', art_id=art.id) }}">
+      <input type="hidden" name="image" value="{{ image.file }}"></form>
+  {% endfor %}
+{% endif %}
 
 {% endblock %}

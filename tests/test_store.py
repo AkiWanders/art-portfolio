@@ -107,8 +107,37 @@ def test_add_artwork_stores_fields_and_image(sandbox):
     assert art["title"] == "Hero"
     assert art["tags"] == ["hero", "sand"]
     assert art["file"].startswith("art/")
+    assert art["images"] == [{"file": art["file"], "w": 1000, "h": 1000}]
     assert (store.SITE_DIR / art["file"]).exists()
     assert store.get_artwork(art["id"])["year"] == "2025"
+
+
+def test_add_artwork_with_several_images(sandbox):
+    art = store.add_artwork(
+        {"title": "Process"},
+        uploads=[("sketch.png", png_bytes(400, 400)), ("final.png", png_bytes(500, 500))],
+    )
+    assert len(art["images"]) == 2
+    # The first uploaded image becomes the cover.
+    assert art["file"] == art["images"][0]["file"]
+    for image in art["images"]:
+        assert (store.SITE_DIR / image["file"]).exists()
+
+
+def test_legacy_artwork_gains_an_images_list(sandbox):
+    """A record written before multi-image pieces still loads cleanly."""
+    store.ensure_dirs()
+    data = store.load_data()
+    data["artworks"].append({"id": "old", "title": "Old", "file": "art/old-1.webp", "w": 10, "h": 20})
+    store.save_data(data)
+
+    art = store.get_artwork("old")
+    assert art["images"] == [{"file": "art/old-1.webp", "w": 10, "h": 20}]
+    assert art["file"] == "art/old-1.webp"      # cover mirrors the only image
+
+    # Saving it back must not lose the promoted image.
+    store.update_artwork("old", {"title": "Old", "tags": "x"})
+    assert store.get_artwork("old")["images"] == [{"file": "art/old-1.webp", "w": 10, "h": 20}]
 
 
 def test_default_title_when_blank(sandbox):
@@ -116,22 +145,88 @@ def test_default_title_when_blank(sandbox):
     assert art["title"] == "Untitled"
 
 
-def test_update_artwork_replaces_image_and_deletes_old(sandbox):
+def test_update_artwork_adds_images_without_touching_the_others(sandbox):
     art = store.add_artwork({"title": "Draft"}, "one.png", png_bytes(400, 400))
-    old_file = art["file"]
+    first = art["file"]
 
     updated = store.update_artwork(art["id"], {"title": "Final", "tags": "x"},
                                    "two.png", png_bytes(400, 400))
     assert updated["title"] == "Final"
-    assert updated["file"] != old_file
-    assert not (store.SITE_DIR / old_file).exists()
+    assert len(updated["images"]) == 2
+    assert updated["file"] == first                      # cover unchanged
+    assert (store.SITE_DIR / first).exists()             # old file kept
 
 
 def test_update_without_image_keeps_file(sandbox):
     art = store.add_artwork({"title": "Keep"}, "k.png", png_bytes(400, 400))
     updated = store.update_artwork(art["id"], {"title": "Renamed"})
     assert updated["file"] == art["file"]
+    assert len(updated["images"]) == 1
     assert updated["title"] == "Renamed"
+
+
+def test_set_cover_moves_the_chosen_image_first(sandbox):
+    art = store.add_artwork({"title": "Set"},
+                            uploads=[("a.png", png_bytes()), ("b.png", png_bytes())])
+    second = art["images"][1]["file"]
+
+    assert store.set_cover(art["id"], second) is True
+    after = store.get_artwork(art["id"])
+    assert after["file"] == second
+    assert after["images"][0]["file"] == second
+
+    assert store.set_cover(art["id"], "art/not-there.webp") is False
+
+
+def test_move_image_changes_order(sandbox):
+    art = store.add_artwork({"title": "Move"},
+                            uploads=[("a.png", png_bytes()), ("b.png", png_bytes())])
+    first, second = (image["file"] for image in art["images"])
+
+    assert store.move_image(art["id"], second, "up") is True
+    assert [i["file"] for i in store.get_artwork(art["id"])["images"]] == [second, first]
+    assert store.move_image(art["id"], second, "up") is False   # already first
+    assert store.move_image(art["id"], "art/nope.webp", "down") is False
+
+
+def test_remove_image_deletes_only_that_file(sandbox):
+    art = store.add_artwork({"title": "Trim"},
+                            uploads=[("a.png", png_bytes()), ("b.png", png_bytes())])
+    first, second = (image["file"] for image in art["images"])
+
+    assert store.remove_image(art["id"], first) is True
+    after = store.get_artwork(art["id"])
+    assert [i["file"] for i in after["images"]] == [second]
+    assert after["file"] == second                       # cover re-pointed
+    assert not (store.SITE_DIR / first).exists()
+    assert (store.SITE_DIR / second).exists()
+
+
+def test_delete_artwork_removes_every_image(sandbox):
+    art = store.add_artwork({"title": "Bye"},
+                            uploads=[("a.png", png_bytes()), ("b.png", png_bytes())])
+    files = [image["file"] for image in art["images"]]
+
+    assert store.delete_artwork(art["id"]) is True
+    assert store.get_artwork(art["id"]) is None
+    for relative in files:
+        assert not (store.SITE_DIR / relative).exists()
+
+
+def test_update_site_saves_and_removes_a_banner(sandbox):
+    site = store.update_site({"artist": "Me"}, "wide.png", png_bytes(3000, 1000))
+    banner = site["banner"]
+    assert banner.startswith("art/banner-")
+    assert (store.SITE_DIR / banner).exists()
+
+    # The banner is capped at its own, larger size.
+    info = store.import_image("wide.png", png_bytes(3000, 1000),
+                              max_edge=store.BANNER_MAX_EDGE, prefix="banner-")
+    assert max(info["w"], info["h"]) == store.BANNER_MAX_EDGE
+
+    store.update_site({"artist": "Me", "remove_banner": "1"})
+    assert store.load_data()["site"]["banner"] == ""
+    assert not (store.SITE_DIR / banner).exists()
 
 
 def test_delete_artwork_removes_record_and_image(sandbox):

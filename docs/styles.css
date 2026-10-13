@@ -100,6 +100,51 @@ a { color: inherit; }
 }
 .hero .intro { color: var(--muted); max-width: 46ch; margin: 0; }
 
+/* ---- hero with a banner image ------------------------------------------ */
+/* The chosen image fills the first screen; a dark scrim keeps the white text
+   readable over any picture, in either theme. */
+.hero.has-banner {
+  position: relative; max-width: none; margin: 0;
+  min-height: 100svh; display: grid; align-content: end;
+  padding: 0 clamp(1rem, 4vw, 3rem) clamp(3rem, 10vh, 7rem);
+  background: #0a090c var(--banner) center / cover no-repeat;
+  color: #fff;
+}
+.hero.has-banner::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(to top, rgba(6, 5, 8, 0.88) 0%, rgba(6, 5, 8, 0.45) 45%, rgba(6, 5, 8, 0.25) 100%);
+}
+.hero.has-banner .hero-inner {
+  position: relative; max-width: 1200px; margin: 0 auto; width: 100%;
+}
+.hero.has-banner h1 { text-shadow: 0 2px 30px rgba(0, 0, 0, 0.5); }
+.hero.has-banner .tagline { color: #fff; }
+.hero.has-banner .intro { color: rgba(255, 255, 255, 0.85); }
+
+/* The header floats over the banner, so the picture starts at the very top of
+   the screen behind it. */
+body.has-banner .site-head {
+  position: fixed; inset: 0 0 auto 0;
+  background: transparent; border-bottom-color: transparent;
+  color: #fff; backdrop-filter: none; -webkit-backdrop-filter: none;
+}
+body.has-banner .site-head .name { color: #fff; }
+body.has-banner .site-head .site-nav a { color: rgba(255, 255, 255, 0.82); }
+body.has-banner .site-head .site-nav a:hover { color: #fff; background: rgba(255, 255, 255, 0.14); }
+body.has-banner .site-head .icon-button { color: #fff; border-color: rgba(255, 255, 255, 0.4); }
+
+/* Once scrolled past the hero, put the header back to normal. */
+body.has-banner.scrolled .site-head {
+  background: color-mix(in srgb, var(--bg) 85%, transparent);
+  border-bottom-color: var(--line);
+  color: var(--ink);
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+}
+body.has-banner.scrolled .site-head .name { color: var(--ink); }
+body.has-banner.scrolled .site-head .site-nav a { color: var(--muted); }
+body.has-banner.scrolled .site-head .site-nav a:hover { color: var(--ink); background: var(--bg-soft); }
+body.has-banner.scrolled .site-head .icon-button { color: var(--ink); border-color: var(--line); }
+
 /* ---- filters ----------------------------------------------------------- */
 .filters {
   display: flex; flex-wrap: wrap; gap: 0.4rem;
@@ -131,6 +176,13 @@ a { color: inherit; }
   cursor: zoom-in; background: var(--bg-soft); border: 1px solid var(--line);
 }
 .piece.is-featured { grid-column: span 2; }
+.piece .count {
+  position: absolute; top: 0.6rem; right: 0.6rem; z-index: 2;
+  min-width: 1.6rem; text-align: center;
+  font-size: 0.72rem; font-weight: 600; letter-spacing: 0.02em;
+  color: #170c07; background: var(--accent);
+  border-radius: 999px; padding: 0.15rem 0.45rem;
+}
 .piece img {
   width: 100%; height: 100%; object-fit: cover; display: block;
   transition: transform 0.55s cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -153,6 +205,8 @@ a { color: inherit; }
   max-width: 1200px; margin: 0 auto;
   padding: clamp(4rem, 12vh, 8rem) clamp(1rem, 4vw, 3rem) 0;
 }
+/* Keep anchored sections clear of the sticky / fixed header. */
+#work, #about, #contact { scroll-margin-top: 5rem; }
 .about h2, .contact h2 {
   font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.18em;
   color: var(--muted); font-family: system-ui, sans-serif; font-weight: 600;
@@ -194,7 +248,22 @@ a { color: inherit; }
   max-width: 100%; max-height: 80vh; border-radius: 8px;
   box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55);
 }
+/* With a thumbnail strip below, leave room for it. */
+.lightbox.has-thumbs .lb-figure img { max-height: 70vh; }
+.lightbox.has-thumbs .lb-figure { gap: 0.6rem; }
 .lb-figure figcaption { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: baseline; }
+.lb-thumbs {
+  display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center;
+  max-width: 100%; margin-top: 0.2rem;
+}
+.lb-thumb {
+  padding: 0; border: 1px solid var(--line); border-radius: 6px;
+  background: none; cursor: pointer; overflow: hidden; line-height: 0;
+  opacity: 0.55; transition: opacity 0.2s ease, border-color 0.2s ease;
+}
+.lb-thumb img { width: 64px; height: 46px; object-fit: cover; display: block; }
+.lb-thumb:hover { opacity: 0.85; }
+.lb-thumb[aria-current="true"] { opacity: 1; border-color: var(--accent); }
 .lb-title { font-family: "Iowan Old Style", Georgia, serif; font-size: 1.15rem; }
 .lb-meta { color: var(--muted); font-size: 0.85rem; }
 .lb-nav, .lb-close {

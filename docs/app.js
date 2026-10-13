@@ -12,6 +12,7 @@ const state = {
   visible: [],
   filter: "all",
   openIndex: -1,
+  imageIndex: 0,
 };
 
 const $ = (id) => document.getElementById(id);
@@ -19,6 +20,14 @@ const $ = (id) => document.getElementById(id);
 const GAP_ROW = 8; // must match --row in styles.css
 
 // ---- helpers -------------------------------------------------------------
+
+/** Every image of a piece, oldest format included (one image stored as `file`). */
+function imagesOf(art) {
+  if (Array.isArray(art.images) && art.images.length) {
+    return art.images.filter((image) => image && image.file);
+  }
+  return art.file ? [{ file: art.file, w: art.w, h: art.h }] : [];
+}
 
 function columnsFor(width) {
   if (width < 560) return 1;
@@ -80,6 +89,22 @@ function applySite(site) {
     links.appendChild(a);
   }
   if (!entries.length) links.innerHTML = '<span class="lb-meta">Links coming soon.</span>';
+
+  applyBanner(site);
+}
+
+/** Put a chosen image behind the name, or leave the plain text hero. */
+function applyBanner(site) {
+  const hero = $("hero");
+  if (site.banner) {
+    hero.style.setProperty("--banner", `url("${site.banner}")`);
+    hero.classList.add("has-banner");
+    document.body.classList.add("has-banner");
+  } else {
+    hero.style.removeProperty("--banner");
+    hero.classList.remove("has-banner");
+    document.body.classList.remove("has-banner");
+  }
 }
 
 // ---- filters -------------------------------------------------------------
@@ -113,7 +138,13 @@ function applyFilter() {
     : state.all.filter((art) => (art.tags || []).includes(state.filter));
   state.visible = shown;
   render(shown);
-  $("empty-note").hidden = shown.length > 0;
+
+  const note = $("empty-note");
+  note.hidden = shown.length > 0;
+  // A whole empty gallery and a filtered-down-to-nothing gallery read differently.
+  note.textContent = state.all.length === 0
+    ? "Nothing here yet — new work is on its way."
+    : "No pieces with that tag yet.";
 }
 
 // ---- gallery -------------------------------------------------------------
@@ -125,24 +156,34 @@ function render(artworks) {
   if (!artworks.length) return;
 
   artworks.forEach((art, index) => {
+    const images = imagesOf(art);
+    const cover = images[0];
     const piece = document.createElement("figure");
     piece.className = "piece" + (art.featured ? " is-featured" : "");
     piece.tabIndex = 0;
     piece.dataset.index = String(index);
     piece.dataset.featured = art.featured ? "1" : "0";
-    piece.dataset.ratio = art.w && art.h ? String(art.h / art.w) : "0.75";
+    piece.dataset.ratio = cover && cover.w && cover.h ? String(cover.h / cover.w) : "0.75";
     piece.setAttribute("role", "button");
     piece.setAttribute("aria-label", `View ${art.title}`);
 
-    if (art.file) {
+    if (cover) {
       const img = document.createElement("img");
-      img.src = art.file;
+      img.src = cover.file;
       img.alt = art.alt || art.title || "";
       img.loading = index < 4 ? "eager" : "lazy";
       img.decoding = "async";
-      if (art.w) img.width = art.w;
-      if (art.h) img.height = art.h;
+      if (cover.w) img.width = cover.w;
+      if (cover.h) img.height = cover.h;
       piece.appendChild(img);
+
+      if (images.length > 1) {
+        const badge = document.createElement("span");
+        badge.className = "count";
+        badge.textContent = String(images.length);
+        badge.title = `${images.length} images`;
+        piece.appendChild(badge);
+      }
 
       const caption = document.createElement("figcaption");
       const meta = [art.year, art.medium].filter(Boolean).join(" · ");
@@ -207,15 +248,59 @@ const lightbox = {
     if (index < 0 || index >= state.visible.length) return;
     state.openIndex = index;
     const art = state.visible[index];
-    const img = $("lb-image");
-    img.src = art.file;
-    img.alt = art.alt || art.title || "";
+    state.imageIndex = 0;
+
     $("lb-title").textContent = art.title;
     $("lb-meta").textContent = [art.year, art.medium, (art.tags || []).join(", ")]
       .filter(Boolean).join(" · ");
+
+    this.buildThumbs(art);
+    this.showImage(0);
+
     this.el.hidden = false;
     document.body.style.overflow = "hidden";
     $("lb-close").focus();
+  },
+  /** The strip of little images, shown only when a piece has more than one. */
+  buildThumbs(art) {
+    const images = imagesOf(art);
+    const strip = $("lb-thumbs");
+    strip.innerHTML = "";
+    strip.dataset.count = String(images.length);
+
+    for (let i = 0; i < images.length; i += 1) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "lb-thumb";
+      button.setAttribute("aria-label", `Show image ${i + 1} of ${images.length}`);
+      const thumb = document.createElement("img");
+      thumb.src = images[i].file;
+      thumb.alt = "";
+      button.appendChild(thumb);
+      button.addEventListener("click", () => this.showImage(i));
+      strip.appendChild(button);
+    }
+  },
+  /** Point the big image at one of the piece's pictures and mark its thumb. */
+  showImage(index) {
+    const art = state.visible[state.openIndex];
+    const images = imagesOf(art);
+    if (!images.length) return;
+
+    state.imageIndex = (index + images.length) % images.length;
+    const image = images[state.imageIndex];
+    const img = $("lb-image");
+    img.src = image.file;
+    img.alt = art.alt || art.title || "";
+
+    const strip = $("lb-thumbs");
+    strip.hidden = images.length < 2;
+    this.el.classList.toggle("has-thumbs", images.length > 1);
+    strip.querySelectorAll(".lb-thumb").forEach((button, i) => {
+      const current = i === state.imageIndex;
+      button.setAttribute("aria-current", String(current));
+      button.tabIndex = current ? 0 : -1;
+    });
   },
   close() {
     this.el.hidden = true;
@@ -230,8 +315,11 @@ const lightbox = {
   onKey(event) {
     if (this.el.hidden) return;
     if (event.key === "Escape") this.close();
-    else if (event.key === "ArrowRight") this.step(1);
-    else if (event.key === "ArrowLeft") this.step(-1);
+    else if (event.key === "ArrowRight") { event.preventDefault(); this.step(1); }
+    else if (event.key === "ArrowLeft") { event.preventDefault(); this.step(-1); }
+    // Up / Down walk the pictures inside one piece.
+    else if (event.key === "ArrowUp") { event.preventDefault(); this.showImage(state.imageIndex - 1); }
+    else if (event.key === "ArrowDown") { event.preventDefault(); this.showImage(state.imageIndex + 1); }
   },
 };
 
@@ -254,12 +342,17 @@ async function init() {
   lightbox.init();
   window.addEventListener("resize", debounce(layout, 150));
 
+  // The header sits over the banner until you scroll past it.
+  const onScroll = () => document.body.classList.toggle("scrolled", window.scrollY > 40);
+  window.addEventListener("scroll", onScroll, { passive: true });
+  onScroll();
+
   try {
     const res = await fetch("data/artworks.json", { cache: "no-store" });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     applySite(data.site);
-    state.all = (data.artworks || []).filter((a) => a.file);
+    state.all = (data.artworks || []).filter((a) => imagesOf(a).length);
     buildFilters();
     applyFilter();
   } catch (err) {

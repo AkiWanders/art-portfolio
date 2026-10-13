@@ -22,12 +22,18 @@ from . import publish, store
 bp = Blueprint("admin", __name__)
 
 
-def _upload():
-    """Return ``(filename, stream)`` for the posted image, or ``(None, None)``."""
-    file = request.files.get("image")
-    if file and file.filename:
-        return file.filename, file.stream
-    return None, None
+def _uploads():
+    """Every posted image, as a list of ``(filename, stream)`` pairs.
+
+    The form posts them under ``images`` (multiple). ``image`` (singular) is
+    still read so an old form or a script keeps working.
+    """
+    pairs = []
+    for key in ("images", "image"):
+        for file in request.files.getlist(key):
+            if file and file.filename:
+                pairs.append((file.filename, file.stream))
+    return pairs
 
 
 def _form_fields() -> dict:
@@ -36,6 +42,14 @@ def _form_fields() -> dict:
     fields["link_label"] = request.form.getlist("link_label")
     fields["link_url"] = request.form.getlist("link_url")
     return fields
+
+
+def _posted_banner():
+    """``(filename, stream)`` for a posted banner image, or ``(None, None)``."""
+    file = request.files.get("banner")
+    if file and file.filename:
+        return file.filename, file.stream
+    return None, None
 
 
 @bp.get("/")
@@ -52,8 +66,7 @@ def dashboard():
 @bp.route("/artwork/new", methods=["GET", "POST"])
 def new_artwork():
     if request.method == "POST":
-        filename, stream = _upload()
-        art = store.add_artwork(_form_fields(), filename, stream)
+        art = store.add_artwork(_form_fields(), uploads=_uploads())
         flash(f'Added "{art["title"]}".', "success")
         return redirect(url_for("admin.dashboard"))
     return render_template(
@@ -70,8 +83,7 @@ def edit_artwork(art_id: str):
         return redirect(url_for("admin.dashboard"))
 
     if request.method == "POST":
-        filename, stream = _upload()
-        updated = store.update_artwork(art_id, _form_fields(), filename, stream)
+        updated = store.update_artwork(art_id, _form_fields(), uploads=_uploads())
         flash(f'Saved "{updated["title"]}".', "success")
         return redirect(url_for("admin.dashboard"))
 
@@ -80,6 +92,33 @@ def edit_artwork(art_id: str):
         heading=f'Edit "{art["title"]}"',
         action=url_for("admin.edit_artwork", art_id=art_id),
     )
+
+
+@bp.post("/artwork/<art_id>/image/cover")
+def cover_image(art_id: str):
+    if store.set_cover(art_id, request.form.get("image", "")):
+        flash("Cover image updated.", "success")
+    else:
+        flash("That image is no longer there.", "error")
+    return redirect(url_for("admin.edit_artwork", art_id=art_id))
+
+
+@bp.post("/artwork/<art_id>/image/move/<direction>")
+def move_image(art_id: str, direction: str):
+    if direction not in ("up", "down"):
+        flash("Unknown move direction.", "error")
+    elif store.move_image(art_id, request.form.get("image", ""), direction):
+        flash("Image order updated.", "success")
+    return redirect(url_for("admin.edit_artwork", art_id=art_id))
+
+
+@bp.post("/artwork/<art_id>/image/delete")
+def delete_image(art_id: str):
+    if store.remove_image(art_id, request.form.get("image", "")):
+        flash("Image removed.", "success")
+    else:
+        flash("That image is no longer there.", "error")
+    return redirect(url_for("admin.edit_artwork", art_id=art_id))
 
 
 @bp.post("/artwork/<art_id>/delete")
@@ -103,7 +142,8 @@ def move_artwork(art_id: str, direction: str):
 @bp.route("/settings", methods=["GET", "POST"])
 def settings():
     if request.method == "POST":
-        store.update_site(_form_fields())
+        filename, stream = _posted_banner()
+        store.update_site(_form_fields(), filename, stream)
         flash("Site settings saved.", "success")
         return redirect(url_for("admin.settings"))
     return render_template("settings.html", site=store.load_data()["site"])

@@ -30,8 +30,15 @@ update-desktop-database ~/.local/share/applications
   cropped or squashed.
 - Featured pieces span two columns.
 - Tag filters, a keyboard-friendly lightbox, and captions on hover.
+- **Pieces can hold several images** — a sketch-to-final set, for example. Those
+  get a small count badge on the tile and a thumbnail strip in the lightbox.
+- **An optional hero banner** — one wide image behind your name on the first
+  screen.
 - `prefers-reduced-motion` is respected; every image has alt text.
 - The accent colour is read from the data file — change it in Settings.
+
+Keyboard: in the lightbox, **← →** move between pieces and **↑ ↓** move between
+the images inside one piece.
 
 ## Setup
 
@@ -50,12 +57,15 @@ Double-click **Art Portfolio** in your app launcher, or from a terminal:
 
 Your browser opens at <http://127.0.0.1:5050>. From there you can:
 
-- **Add artwork** — upload a PNG, JPG, WEBP or a Krita `.kra` file. It is
-  automatically resized to 1800px on the long edge and converted to `.webp`.
+- **Add artwork** — pick a PNG, JPG, WEBP or a Krita `.kra` file. Each is
+  automatically resized (1800px on the long edge) and converted to `.webp`.
+- **Several images per piece** — select more than one file at once, or add more
+  later from the edit page. The first image is the cover shown in the gallery;
+  *Make cover*, ↑ ↓ and *Remove* reorder or drop the rest.
 - **Edit / reorder / delete** — the ↑ ↓ buttons change the gallery order, and
   *featured* pieces span two columns on the site.
-- **Settings** — artist name, tagline, intro, about, accent colour, email and
-  contact links.
+- **Settings** — artist name, tagline, intro, about, accent colour, email,
+  contact links, and the hero banner.
 - **Preview site ↗** — opens the real public page before you publish.
 - **Publish** — commits every change and pushes to GitHub in one click.
 

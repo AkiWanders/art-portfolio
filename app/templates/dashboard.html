@@ -42,6 +42,7 @@
     <li class="piece">
       <a class="thumb" href="{{ url_for('admin.edit_artwork', art_id=art.id) }}">
         {% if art.file %}<img src="{{ url_for('admin.preview', path=art.file) }}" alt="{{ art.alt or art.title }}" loading="lazy">
+          {% if art.images and art.images|length > 1 %}<span class="count" title="{{ art.images|length }} images">{{ art.images|length }}</span>{% endif %}
         {% else %}<span class="noimg">no image</span>{% endif %}
       </a>
       <div class="piece-body">

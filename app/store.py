@@ -43,6 +43,10 @@ DATA_FILE = DATA_DIR / "artworks.json"
 MAX_EDGE = 1800
 WEBP_QUALITY = 82
 
+# The hero banner stretches across the whole first screen, so it is allowed to
+# be a little bigger than a gallery image.
+BANNER_MAX_EDGE = 2200
+
 # Files we accept in an upload / import.
 VALID_EXTS = {".png", ".jpg", ".jpeg", ".webp", ".bmp", ".gif", ".tiff", ".kra"}
 
@@ -62,6 +66,7 @@ DEFAULT_DATA = {
         ),
         "accent": "#ff5e3a",
         "email": "",
+        "banner": "",
         "links": [
             {"label": "Instagram", "url": ""},
             {"label": "ArtStation", "url": ""},
@@ -127,7 +132,8 @@ def load_data() -> dict:
     # never has to check for missing keys.
     base = json.loads(json.dumps(DEFAULT_DATA))
     base["site"].update(data.get("site") or {})
-    base["artworks"] = data.get("artworks") or []
+    # Every artwork gets an ``images`` list, even one saved before that existed.
+    base["artworks"] = [normalise_artwork(a) for a in (data.get("artworks") or [])]
     return base
 
 
@@ -168,25 +174,29 @@ def _open_source(filename: str, stream) -> Image.Image:
     return image
 
 
-def import_image(filename: str, stream, art_dir: Path | None = None) -> dict:
+def import_image(filename: str, stream, art_dir: Path | None = None,
+                 max_edge: int | None = None, prefix: str = "") -> dict:
     """Save an image into docs/art as a right-sized .webp.
 
     Returns ``{"file": "...", "w": ..., "h": ...}``. The width and height let
-    the public grid reserve the right space before the image loads.
+    the public grid reserve the right space before the image loads. ``max_edge``
+    overrides the normal limit (the hero banner uses a larger one) and ``prefix``
+    goes in front of the generated file name so banners are easy to spot.
     """
     art_dir = art_dir or ART_DIR
     art_dir.mkdir(parents=True, exist_ok=True)
+    limit = max_edge or MAX_EDGE
 
     image = _open_source(filename, stream)
     if image.mode not in ("RGB", "RGBA", "L"):
         image = image.convert("RGBA" if "A" in image.getbands() else "RGB")
 
     original_w, original_h = image.size
-    image.thumbnail((MAX_EDGE, MAX_EDGE), Image.LANCZOS)
+    image.thumbnail((limit, limit), Image.LANCZOS)
     out_w, out_h = image.size
 
     stem = slugify(Path(filename).stem) or "artwork"
-    name = f"{stem}-{uuid.uuid4().hex[:8]}.webp"
+    name = f"{prefix}{stem}-{uuid.uuid4().hex[:8]}.webp"
     image.save(art_dir / name, "WEBP", quality=WEBP_QUALITY, method=6)
     return {"file": name, "w": out_w, "h": out_h, "source_w": original_w, "source_h": original_h}
 
@@ -232,8 +242,72 @@ def _renumber(artworks: list[dict]) -> None:
         art["order"] = position
 
 
-def add_artwork(fields: dict, image_filename=None, image_stream=None) -> dict:
-    """Create one artwork. If an image is given it is imported first."""
+def normalise_artwork(art: dict) -> dict:
+    """Make sure an artwork has a tidy ``images`` list.
+
+    Records saved before multi-image pieces existed only had ``file`` / ``w`` /
+    ``h``. Those become a one-image list. ``file`` / ``w`` / ``h`` are then kept
+    equal to the first image -- the cover -- so the public page and any older
+    code that only reads ``file`` still work.
+    """
+    if not isinstance(art.get("images"), list):
+        art["images"] = []
+
+    images = []
+    for entry in art["images"]:
+        if isinstance(entry, dict) and entry.get("file"):
+            images.append({
+                "file": entry["file"],
+                "w": int(entry.get("w") or 0),
+                "h": int(entry.get("h") or 0),
+            })
+
+    # A record from before this feature: promote its single file into the list.
+    if not images and art.get("file"):
+        images = [{"file": art["file"], "w": int(art.get("w") or 0), "h": int(art.get("h") or 0)}]
+
+    art["images"] = images
+    cover = images[0] if images else {"file": "", "w": 0, "h": 0}
+    art["file"], art["w"], art["h"] = cover["file"], cover["w"], cover["h"]
+    return art
+
+
+def _import_uploads(uploads) -> list[dict]:
+    """Import ``(filename, stream)`` pairs into docs/art as image entries."""
+    entries = []
+    for filename, stream in uploads or []:
+        if not filename or stream is None:
+            continue
+        info = import_image(filename, stream)
+        entries.append({"file": f"art/{info['file']}", "w": info["w"], "h": info["h"]})
+    return entries
+
+
+def _image_index(art: dict, image_name: str):
+    """Where in ``art['images']`` the named file sits, or None."""
+    wanted = Path(image_name or "").name
+    for index, image in enumerate(art.get("images") or []):
+        if Path(image["file"]).name == wanted:
+            return index
+    return None
+
+
+def _collect_uploads(image_filename, image_stream, uploads) -> list[tuple]:
+    """Combine the single-image arguments and the list form into one list."""
+    pairs = []
+    if image_filename and image_stream is not None:
+        pairs.append((image_filename, image_stream))
+    pairs.extend(uploads or [])
+    return pairs
+
+
+def add_artwork(fields: dict, image_filename=None, image_stream=None, uploads=None) -> dict:
+    """Create one artwork.
+
+    Images can be given either as a single ``(image_filename, image_stream)``
+    pair or as a list of ``(filename, stream)`` pairs in ``uploads``. The first
+    image becomes the cover.
+    """
     with _LOCK:
         data = load_data()
         art = {
@@ -246,20 +320,24 @@ def add_artwork(fields: dict, image_filename=None, image_stream=None) -> dict:
             "featured": bool(fields.get("featured")),
             "order": _next_order(data["artworks"]),
             "added": date.today().isoformat(),
+            "images": _import_uploads(_collect_uploads(image_filename, image_stream, uploads)),
             "file": "",
             "w": 0,
             "h": 0,
         }
-        if image_filename and image_stream is not None:
-            info = import_image(image_filename, image_stream)
-            art.update({"file": f"art/{info['file']}", "w": info["w"], "h": info["h"]})
+        normalise_artwork(art)
         data["artworks"].append(art)
         save_data(data)
         return art
 
 
-def update_artwork(art_id: str, fields: dict, image_filename=None, image_stream=None) -> dict | None:
-    """Change an existing artwork. Replacing the image deletes the old file."""
+def update_artwork(art_id: str, fields: dict, image_filename=None, image_stream=None,
+                   uploads=None) -> dict | None:
+    """Change an existing artwork; new images are added to the piece.
+
+    Removing an image is its own action (:func:`remove_image`) so that saving the
+    text fields can never accidentally drop a picture.
+    """
     with _LOCK:
         data = load_data()
         for art in data["artworks"]:
@@ -271,13 +349,72 @@ def update_artwork(art_id: str, fields: dict, image_filename=None, image_stream=
             art["tags"] = parse_tags(fields.get("tags"))
             art["alt"] = clean_text(fields.get("alt"))
             art["featured"] = bool(fields.get("featured"))
-            if image_filename and image_stream is not None:
-                info = import_image(image_filename, image_stream)
-                delete_image(art.get("file", ""))
-                art.update({"file": f"art/{info['file']}", "w": info["w"], "h": info["h"]})
+
+            normalise_artwork(art)
+            art["images"].extend(_import_uploads(_collect_uploads(image_filename, image_stream, uploads)))
+            normalise_artwork(art)
             save_data(data)
             return art
     return None
+
+
+def set_cover(art_id: str, image_name: str) -> bool:
+    """Make one image of a piece the cover (the one shown in the gallery)."""
+    with _LOCK:
+        data = load_data()
+        for art in data["artworks"]:
+            if art.get("id") != art_id:
+                continue
+            normalise_artwork(art)
+            index = _image_index(art, image_name)
+            if index is None:
+                return False
+            if index > 0:
+                art["images"].insert(0, art["images"].pop(index))
+                normalise_artwork(art)
+                save_data(data)
+            return True
+    return False
+
+
+def move_image(art_id: str, image_name: str, direction: str) -> bool:
+    """Move one image of a piece one place earlier or later."""
+    with _LOCK:
+        data = load_data()
+        for art in data["artworks"]:
+            if art.get("id") != art_id:
+                continue
+            normalise_artwork(art)
+            index = _image_index(art, image_name)
+            if index is None:
+                return False
+            other = index - 1 if direction == "up" else index + 1
+            if not (0 <= other < len(art["images"])):
+                return False
+            art["images"][index], art["images"][other] = art["images"][other], art["images"][index]
+            normalise_artwork(art)
+            save_data(data)
+            return True
+    return False
+
+
+def remove_image(art_id: str, image_name: str) -> bool:
+    """Drop one image from a piece and delete its file."""
+    with _LOCK:
+        data = load_data()
+        for art in data["artworks"]:
+            if art.get("id") != art_id:
+                continue
+            normalise_artwork(art)
+            index = _image_index(art, image_name)
+            if index is None:
+                return False
+            art["images"].pop(index)
+            delete_image(Path(image_name).name)
+            normalise_artwork(art)
+            save_data(data)
+            return True
+    return False
 
 
 def delete_artwork(art_id: str) -> bool:
@@ -288,7 +425,9 @@ def delete_artwork(art_id: str) -> bool:
             return False
         for art in data["artworks"]:
             if art.get("id") == art_id:
-                delete_image(art.get("file", ""))
+                normalise_artwork(art)
+                for image in art["images"]:
+                    delete_image(image["file"])
         data["artworks"] = sorted(keep, key=sort_key)
         _renumber(data["artworks"])
         save_data(data)
@@ -313,8 +452,8 @@ def reorder(art_id: str, direction: str) -> bool:
         return True
 
 
-def update_site(fields: dict) -> dict:
-    """Save the site-wide settings (name, tagline, about, accent, links)."""
+def update_site(fields: dict, banner_filename=None, banner_stream=None) -> dict:
+    """Save the site-wide settings (name, tagline, about, accent, links, banner)."""
     with _LOCK:
         data = load_data()
         site = data["site"]
@@ -330,6 +469,18 @@ def update_site(fields: dict) -> dict:
         ]
         if links:
             site["links"] = links
+
+        # The hero banner: an explicit removal wins, otherwise a new upload
+        # replaces whatever was there.
+        if fields.get("remove_banner"):
+            delete_image(site.get("banner", ""))
+            site["banner"] = ""
+        if banner_filename and banner_stream is not None:
+            info = import_image(banner_filename, banner_stream,
+                                max_edge=BANNER_MAX_EDGE, prefix="banner-")
+            delete_image(site.get("banner", ""))
+            site["banner"] = f"art/{info['file']}"
+
         save_data(data)
         return site
 

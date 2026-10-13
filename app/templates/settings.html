@@ -4,7 +4,8 @@
 
 <h2>Site settings</h2>
 
-<form class="panel form" method="post" action="{{ url_for('admin.settings') }}">
+<form class="panel form" method="post" action="{{ url_for('admin.settings') }}"
+      enctype="multipart/form-data">
   <label>Artist name
     <input type="text" name="artist" value="{{ site.artist }}">
   </label>
@@ -25,6 +26,24 @@
       <input type="email" name="email" value="{{ site.email }}" placeholder="you@example.com">
     </label>
   </div>
+
+  <fieldset class="banner-field">
+    <legend>Hero banner</legend>
+    {% if site.banner %}
+      <img class="preview banner-preview" src="{{ url_for('admin.preview', path=site.banner) }}" alt="">
+      <label class="check">
+        <input type="checkbox" name="remove_banner" value="1"> Remove the banner
+      </label>
+    {% else %}
+      <p class="muted small">No banner. The hero shows just your name and text on
+        the page background.</p>
+    {% endif %}
+    <label>{% if site.banner %}Replace the banner{% else %}Add a banner image{% endif %}
+      <input type="file" name="banner" accept=".png,.jpg,.jpeg,.webp,.gif,.bmp,.tiff,.kra">
+    </label>
+    <p class="muted small">Shown full-screen behind your name on the public page.
+      A wide landscape image works best (around 2200px across).</p>
+  </fieldset>
 
   <fieldset class="links">
     <legend>Links</legend>

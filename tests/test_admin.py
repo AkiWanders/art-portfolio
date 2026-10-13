@@ -114,6 +114,52 @@ def test_save_settings(client):
     assert site["links"][0]["label"] == "X"
 
 
+def test_create_artwork_with_several_images_at_once(client, sandbox):
+    response = client.post(
+        "/artwork/new",
+        data={"title": "Set", "images": [(png(), "one.png"), (png(), "two.png")]},
+        content_type="multipart/form-data",
+        follow_redirects=True,
+    )
+    assert response.status_code == 200
+    art = store.list_artworks()[0]
+    assert len(art["images"]) == 2
+    for image in art["images"]:
+        assert (sandbox / image["file"]).exists()
+
+
+def test_image_cover_move_and_delete_routes(client, sandbox):
+    client.post("/artwork/new",
+                data={"title": "Set", "images": [(png(), "a.png"), (png(), "b.png")]},
+                content_type="multipart/form-data")
+    art = store.list_artworks()[0]
+    first, second = (image["file"] for image in art["images"])
+
+    # Make the second image the cover.
+    client.post(f"/artwork/{art['id']}/image/cover", data={"image": second})
+    assert store.get_artwork(art["id"])["file"] == second
+
+    # Move it back down, then up again.
+    client.post(f"/artwork/{art['id']}/image/move/down", data={"image": second})
+    assert store.get_artwork(art["id"])["images"][0]["file"] == first
+    client.post(f"/artwork/{art['id']}/image/move/sideways", data={"image": first})
+    assert store.get_artwork(art["id"])["images"][0]["file"] == first
+
+    # Delete one image; the other stays.
+    client.post(f"/artwork/{art['id']}/image/delete", data={"image": first})
+    remaining = store.get_artwork(art["id"])["images"]
+    assert [i["file"] for i in remaining] == [second]
+    assert not (sandbox / first).exists()
+
+
+def test_upload_banner_through_settings(client, sandbox):
+    client.post("/settings", data={"artist": "Studio", "banner": (png(), "wide.png")},
+                content_type="multipart/form-data")
+    banner = store.load_data()["site"]["banner"]
+    assert banner.startswith("art/banner-")
+    assert (sandbox / banner).exists()
+
+
 def test_publish_without_repo_reports_gracefully(client):
     response = client.post("/publish", data={"message": "try"}, follow_redirects=True)
     assert response.status_code == 200
