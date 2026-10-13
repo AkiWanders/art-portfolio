@@ -10,7 +10,18 @@ A minimal, vibrant art portfolio in two halves that share one file:
 Both sides read and write the same `docs/data/artworks.json`. The public page
 fetches it in the browser; the studio writes it. That is why the studio can
 never be reached from the internet — it is only ever started on your machine,
-bound to `127.0.0.1`.
+bound to `127.0.0.1`, on port **5050** (the Bakery app has 5000).
+
+To install the double-click launcher:
+
+```bash
+chmod +x launch.sh
+cp art-portfolio.desktop ~/.local/share/applications/
+update-desktop-database ~/.local/share/applications
+```
+
+**Art Portfolio** then appears in your launcher, with right-click **Stop** and
+**Restart** actions.
 
 ## How it looks
 
@@ -31,11 +42,13 @@ python -m venv venv
 
 ## Add and edit artwork (the studio)
 
+Double-click **Art Portfolio** in your app launcher, or from a terminal:
+
 ```bash
-./venv/bin/python run.py
+./launch.sh
 ```
 
-Your browser opens at <http://127.0.0.1:5000>. From there you can:
+Your browser opens at <http://127.0.0.1:5050>. From there you can:
 
 - **Add artwork** — upload a PNG, JPG, WEBP or a Krita `.kra` file. It is
   automatically resized to 1800px on the long edge and converted to `.webp`.

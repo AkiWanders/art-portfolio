@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Art Portfolio">
+  <rect width="512" height="512" rx="116" fill="#141317"/>
+  <path d="M104 384C104 232 208 128 400 128" fill="none" stroke="#ff5e3a"
+        stroke-width="48" stroke-linecap="round"/>
+  <path d="M104 384c74-30 118-88 142-170" fill="none" stroke="#f3efec"
+        stroke-width="20" stroke-linecap="round" opacity=".8"/>
+  <circle cx="400" cy="128" r="27" fill="#f3efec"/>
+</svg>

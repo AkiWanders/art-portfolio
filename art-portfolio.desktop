@@ -1,0 +1,21 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Art Portfolio
+GenericName=Art portfolio studio
+Comment=Add, edit and publish art to your portfolio
+Exec=/usr/bin/kitty --title "Art Portfolio — studio" /home/aki/Projects/art-portfolio/launch.sh
+Path=/home/aki/Projects/art-portfolio
+Icon=/home/aki/Projects/art-portfolio/art-portfolio.svg
+Terminal=false
+Categories=Graphics;
+Keywords=art;portfolio;gallery;studio;drawing;
+Actions=Stop;Restart;
+
+[Desktop Action Stop]
+Name=Stop studio
+Exec=/usr/bin/pkill -f "/home/aki/Projects/art-portfolio/venv/bin/python"
+
+[Desktop Action Restart]
+Name=Restart studio
+Exec=/usr/bin/bash -c "pkill -f '/home/aki/Projects/art-portfolio/venv/bin/python'; sleep 1; /usr/bin/kitty --title 'Art Portfolio — studio' /home/aki/Projects/art-portfolio/launch.sh"
