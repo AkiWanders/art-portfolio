@@ -7,6 +7,7 @@ called directly.
 from __future__ import annotations
 
 import io
+from pathlib import Path
 
 import pytest
 from PIL import Image
@@ -164,3 +165,17 @@ def test_publish_without_repo_reports_gracefully(client):
     response = client.post("/publish", data={"message": "try"}, follow_redirects=True)
     assert response.status_code == 200
     assert b"not a git repository" in response.data
+
+
+def test_hidden_attribute_always_wins_in_the_public_css():
+    """``[hidden]`` must beat a ``display`` rule in the public stylesheet.
+
+    ``.lightbox { display: grid }`` once overrode the browser's built-in
+    ``[hidden] { display: none }``. The lightbox was therefore always on screen
+    (a blurred overlay) and its close button appeared to do nothing, because
+    setting the attribute had no visual effect. This is cheap insurance against
+    that coming back.
+    """
+    css = (Path(__file__).resolve().parent.parent / "docs" / "styles.css").read_text(encoding="utf-8")
+    assert "[hidden]" in css
+    assert "display: none !important" in css

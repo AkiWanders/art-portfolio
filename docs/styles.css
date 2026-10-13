@@ -27,6 +27,11 @@ html[data-theme="light"] {
 
 * { box-sizing: border-box; }
 
+/* The `hidden` attribute must always win. Without this, any rule that sets
+   `display` (e.g. `.lightbox { display: grid }`) silently overrides it and the
+   element stays on screen even when the script hides it. */
+[hidden] { display: none !important; }
+
 html { scroll-behavior: smooth; }
 
 body {

@@ -6,6 +6,7 @@
     "about": "I'm SandGrace, a concept artist. I design characters, creatures and the worlds they live in, then colour them until they feel real. Most of the work here grows out of a desert setting I keep returning to — sand, ruined cities, and the things that walk between them.",
     "accent": "#ff5e3a",
     "email": "",
+    "banner": "",
     "links": [
       {
         "label": "ArtStation",
@@ -13,5 +14,27 @@
       }
     ]
   },
-  "artworks": []
+  "artworks": [
+    {
+      "id": "7324b42a9967",
+      "title": "malenia",
+      "year": "",
+      "medium": "",
+      "tags": [],
+      "alt": "",
+      "featured": false,
+      "order": 1,
+      "added": "2026-10-13",
+      "images": [
+        {
+          "file": "art/malenia-84556f6e.webp",
+          "w": 1800,
+          "h": 1800
+        }
+      ],
+      "file": "art/malenia-84556f6e.webp",
+      "w": 1800,
+      "h": 1800
+    }
+  ]
 }
