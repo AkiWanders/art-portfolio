@@ -179,3 +179,16 @@ def test_hidden_attribute_always_wins_in_the_public_css():
     css = (Path(__file__).resolve().parent.parent / "docs" / "styles.css").read_text(encoding="utf-8")
     assert "[hidden]" in css
     assert "display: none !important" in css
+
+
+def test_gallery_click_calls_a_lightbox_method_that_exists():
+    """The tile click handler must call the real lightbox method.
+
+    It used to call ``openLightbox(...)`` — a name defined nowhere — so clicking
+    a piece threw a ReferenceError and the viewer never opened. The bug hid for a
+    long time because the lightbox was *also* stuck visible: it looked like a
+    broken overlay rather than a dead click.
+    """
+    js = (Path(__file__).resolve().parent.parent / "docs" / "app.js").read_text(encoding="utf-8")
+    assert "openLightbox" not in js, "openLightbox() is not defined — call lightbox.open()"
+    assert "lightbox.open(" in js

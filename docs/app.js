@@ -193,7 +193,7 @@ function render(artworks) {
       piece.appendChild(caption);
     }
 
-    const open = () => openLightbox(index);
+    const open = () => lightbox.open(index);
     piece.addEventListener("click", open);
     piece.addEventListener("keydown", (event) => {
       if (event.key === "Enter" || event.key === " ") {
